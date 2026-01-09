@@ -1,0 +1,589 @@
+/* ============================================
+   NRL Tracker - Modern UI Styles
+   Gradient, Glassmorphism, Animations
+   ============================================ */
+
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ============ ROOT VARIABLES ============ */
+:root {
+    --primary-gradient: linear-gradient(135deg, #FF6B6B 0%, #FFE66D 100%);
+    --secondary-gradient: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
+    --accent-gradient: linear-gradient(135deg, #F093FB 0%, #F5576C 100%);
+    --score-gradient: linear-gradient(135deg, #FF6B6B 0%, #FFE66D 100%);
+    --glass-bg: rgba(255, 255, 255, 0.9);
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --text-primary: #2C3E50;
+    --text-secondary: #5A6C7D;
+    --shadow-light: 0 8px 32px rgba(255, 107, 107, 0.15);
+    --shadow-medium: 0 12px 40px rgba(255, 107, 107, 0.25);
+    --free-badge: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+/* ============ GLOBAL STYLES ============ */
+.stApp {
+    background: linear-gradient(135deg, #FFF5E4 0%, #FFE3E3 50%, #FFD1D1 100%);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    min-height: 100vh;
+}
+
+/* Hide Streamlit branding */
+#MainMenu, footer, header {
+    visibility: hidden;
+}
+
+/* Remove default padding */
+.block-container {
+    padding-top: 0 !important;
+    max-width: 100% !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--primary-gradient);
+    border-radius: 10px;
+}
+
+/* ============ HEADER ============ */
+.header-wrapper {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-light);
+}
+
+.header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #FF6B6B;
+}
+
+.logo-icon {
+    font-size: 2rem;
+    filter: drop-shadow(0 2px 4px rgba(255, 107, 107, 0.3));
+}
+
+.github-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #24292e;
+    color: white;
+    border-radius: 50px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.github-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(36, 41, 46, 0.3);
+}
+
+/* ============ HERO SECTION ============ */
+.hero-container {
+    text-align: center;
+    padding: 3rem 1rem 1rem;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.hero-icon {
+    width: 100px;
+    height: 100px;
+    background: var(--primary-gradient);
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 3rem;
+    color: white;
+    box-shadow: var(--shadow-medium);
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.free-badge {
+    display: inline-block;
+    background: var(--free-badge);
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 50px;
+    font-size: 1.125rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 25px rgba(17, 153, 142, 0.4);
+    animation: pulse-grow 2s ease-in-out infinite;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+@keyframes pulse-grow {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.hero-title {
+    font-size: 2.75rem;
+    font-weight: 800;
+    color: #2C3E50;
+    margin-bottom: 0.75rem;
+    line-height: 1.2;
+}
+
+.hero-subtitle {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    font-weight: 400;
+}
+
+/* ============ SEARCH BOX ============ */
+/* Target the horizontal block that contains columns (search area) */
+div[data-testid="stHorizontalBlock"] {
+    max-width: 700px !important;
+    margin: 0 auto !important;
+    padding: 0 1rem !important;
+    gap: 0.75rem !important;
+}
+
+/* Target Streamlit columns container */
+div[data-testid="column"] {
+    display: flex !important;
+    align-items: stretch !important;
+    overflow: visible !important;
+}
+
+/* Fix Streamlit container overflow */
+.element-container {
+    overflow: visible !important;
+}
+
+section[data-testid="stVerticalBlock"] > div {
+    overflow: visible !important;
+}
+
+.search-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-top: 0.75rem;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Style Streamlit input */
+.stTextInput {
+    width: 100% !important;
+}
+
+.stTextInput > div {
+    overflow: visible !important;
+}
+
+.stTextInput > div > div {
+    overflow: visible !important;
+}
+
+.stTextInput > div > div > input {
+    border-radius: 12px !important;
+    border: 2px solid #e0e5ec !important;
+    padding: 0.875rem 1.25rem !important;
+    font-size: 1rem !important;
+    transition: all 0.3s ease !important;
+    background: white !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+    height: 52px !important;
+    box-sizing: border-box !important;
+}
+
+.stTextInput > div > div > input:focus,
+.stTextInput > div > div > input:focus-visible,
+.stTextInput > div > div > input:active {
+    border-color: #FF6B6B !important;
+    box-shadow: 0 2px 12px rgba(255, 107, 107, 0.3) !important;
+    outline: none !important;
+    outline-color: transparent !important;
+    outline-style: none !important;
+}
+
+/* Remove red outline from Streamlit */
+.stTextInput > div[data-baseweb="input"] {
+    border-color: transparent !important;
+}
+
+.stTextInput > div[data-baseweb="input"]:focus-within {
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Target baseweb input wrapper */
+div[data-baseweb="base-input"] {
+    border-color: transparent !important;
+    background-color: transparent !important;
+}
+
+div[data-baseweb="input"]:focus-within {
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+.stTextInput label {
+    display: none !important;
+}
+
+/* Style Streamlit button */
+.stButton > button {
+    background: var(--primary-gradient) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 0.875rem 2rem !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4) !important;
+    white-space: nowrap !important;
+    height: 52px !important;
+    box-sizing: border-box !important;
+}
+
+.stButton > button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 25px rgba(255, 107, 107, 0.5) !important;
+}
+
+.stButton > button:active {
+    transform: translateY(0) !important;
+}
+
+/* ============ RESULTS SECTION ============ */
+.results-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* ============ STUDENT CARD ============ */
+.student-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: var(--shadow-medium);
+    border: 1px solid var(--glass-border);
+    margin: 1.5rem 0;
+    animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.student-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+
+.student-avatar {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #e0e5ec 0%, #f0f4f8 100%);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: var(--text-secondary);
+}
+
+.score-badge {
+    background: var(--score-gradient);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.35);
+}
+
+.score-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.score-value {
+    font-size: 2.25rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-top: 0.25rem;
+}
+
+.student-info {
+    margin-top: 1rem;
+}
+
+.info-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.info-row strong {
+    color: var(--text-primary);
+}
+
+/* ============ ACTIVITY LIST ============ */
+.activity-section {
+    margin-top: 1.5rem;
+}
+
+.activity-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.activity-item {
+    background: white;
+    border-radius: 16px;
+    padding: 1.25rem;
+    margin-bottom: 0.75rem;
+    border: 1px solid #e8eef5;
+    transition: all 0.3s ease;
+    animation: fadeIn 0.4s ease;
+}
+
+.activity-item:hover {
+    transform: translateX(5px);
+    box-shadow: var(--shadow-light);
+    border-color: #FF6B6B;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.activity-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.activity-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.activity-score {
+    background: linear-gradient(135deg, #FFE3E3 0%, #FFF5E4 100%);
+    color: #FF6B6B;
+    padding: 0.375rem 0.875rem;
+    border-radius: 50px;
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+.activity-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    background: var(--primary-gradient);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.activity-link:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+}
+
+.activity-stt {
+    background: #f0f4f8;
+    color: var(--text-secondary);
+    padding: 0.25rem 0.625rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* ============ FOOTER ============ */
+.footer-container {
+    max-width: 700px;
+    margin: 3rem auto 0;
+    padding: 2rem 1rem;
+    text-align: center;
+    border-top: 1px solid var(--glass-border);
+}
+
+.footer-github {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border-radius: 50px;
+    box-shadow: var(--shadow-light);
+    border: 1px solid var(--glass-border);
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.footer-github:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-medium);
+}
+
+.star-icon {
+    color: #f5a623;
+    font-size: 1.25rem;
+    animation: pulse 2s ease infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+.footer-text {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-top: 1rem;
+}
+
+.footer-link {
+    color: #FF6B6B;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.footer-link:hover {
+    text-decoration: underline;
+}
+
+/* ============ NO RESULT ============ */
+.no-result {
+    text-align: center;
+    padding: 3rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    margin: 1.5rem 0;
+    animation: slideUp 0.5s ease;
+}
+
+.no-result-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.no-result-text {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-icon {
+        width: 80px;
+        height: 80px;
+        font-size: 2.5rem;
+    }
+    
+    .search-box {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .stButton > button {
+        width: 100% !important;
+    }
+    
+    .student-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .activity-meta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .header-container {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+

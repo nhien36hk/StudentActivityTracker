@@ -1,0 +1,15 @@
+# NRL Tracker - Production Dependencies
+# Python 3.9+
+
+# Web Framework
+streamlit==1.52.2
+
+# Data Processing
+pandas==2.3.3
+openpyxl==3.1.5
+
+# Document Processing
+python-docx==1.2.0
+
+# HTTP Requests
+requests==2.32.5
