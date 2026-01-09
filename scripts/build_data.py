@@ -2,9 +2,13 @@
 Script xử lý dữ liệu NRL: Download từ Google Docs → Parse → Aggregate.
 
 Usage:
-    python scripts/build_data.py           # Xử lý toàn bộ links
-    python scripts/build_data.py --limit 5 # Xử lý 5 links đầu tiên (test)
-    python scripts/build_data.py -l 10     # Xử lý 10 links
+    python scripts/build_data.py                              # File mặc định
+    python scripts/build_data.py --limit 5                    # Test 5 links
+    python scripts/build_data.py --excel data/2023-2024.xlsx  # File Excel khác
+    
+Example:
+    python scripts/build_data.py --excel data/2023-2024.xlsx
+    # Output tự động: data/students_2023-2024.json
 """
 import sys
 import argparse
@@ -20,8 +24,11 @@ from src.parser import parse_docx_file
 from src.aggregator import load_to_dataframe, aggregate_by_student, save_json, print_summary
 
 
-# ============ PATHS ============
-EXCEL_PATH = Path("data/danhsachct.xlsx")
+# ============ DEFAULT PATHS ============
+DEFAULT_EXCEL = Path("data/danhsachct.xlsx")
+
+# Paths (sẽ được set trong main dựa vào arguments)
+EXCEL_PATH = DEFAULT_EXCEL
 DOWNLOAD_DIR = Path("data/downloaded")
 RAW_OUTPUT = Path("data/raw_activities.json")
 FINAL_OUTPUT = Path("data/students.json")
@@ -125,6 +132,8 @@ def step2_aggregate(raw_data: list) -> dict:
 
 
 def main():
+    global EXCEL_PATH, DOWNLOAD_DIR, RAW_OUTPUT, FINAL_OUTPUT
+    
     parser = argparse.ArgumentParser(
         description="Build NRL data: Download → Parse → Aggregate"
     )
@@ -134,10 +143,27 @@ def main():
         default=None,
         help='Số lượng links xử lý (mặc định: tất cả)'
     )
+    parser.add_argument(
+        '-e', '--excel',
+        type=Path,
+        default=DEFAULT_EXCEL,
+        help=f'File Excel input (mặc định: {DEFAULT_EXCEL})'
+    )
     args = parser.parse_args()
     
+    # Set paths dựa vào file Excel
+    EXCEL_PATH = args.excel
+    if args.excel != DEFAULT_EXCEL:
+        excel_name = args.excel.stem  # e.g. "2023-2024"
+        DOWNLOAD_DIR = Path(f"data/downloaded_{excel_name}")
+        RAW_OUTPUT = Path(f"data/raw_{excel_name}.json")
+        FINAL_OUTPUT = Path(f"data/students_{excel_name}.json")
+    
     print("🚀 NRL DATA BUILDER")
-    print(f"   Limit: {args.limit if args.limit else 'ALL'}")
+    print("="*60)
+    print(f"   📂 Excel:  {EXCEL_PATH}")
+    print(f"   📂 Output: {FINAL_OUTPUT}")
+    print(f"   🔢 Limit:  {args.limit if args.limit else 'ALL'}")
     
     # Bước 1: Download & Parse
     raw_data = step1_download_and_parse(args.limit)

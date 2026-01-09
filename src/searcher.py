@@ -9,7 +9,7 @@ from typing import Dict, List, Tuple, Optional
 import streamlit as st
 
 
-STUDENTS_FILE = Path(__file__).parent.parent / "data" / "students.json"
+STUDENTS_FILE = Path(__file__).parent.parent / "data" / "students_merged.json"
 
 
 @st.cache_data
@@ -114,5 +114,6 @@ def search_student(query: str) -> List[Tuple[str, Dict]]:
     else:
         # Name search (no numbers)
         return search_by_name(query, data)
+
 
 

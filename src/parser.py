@@ -7,46 +7,42 @@ import re
 from docx import Document
 
 
-def extract_activity_name(doc: Document) -> str:
+def extract_activity_name_from_filename(file_path: Path) -> str:
     """
-    Trích xuất tên chương trình từ document.
-    Tìm text trong dấu "" sau cụm "tham gia chương trình".
+    Trích xuất tên chương trình từ tên file.
+    
+    Tên file format: "001_QĐxx24 - CÔNG NHẬN NRL WORKSHOP XYZ.docx"
+    → Lấy phần sau "NRL " hoặc sau " - "
     
     Args:
-        doc: Document object
+        file_path: Path của file
         
     Returns:
-        Tên chương trình hoặc "Unknown"
+        Tên chương trình
     """
-    # Ghép tất cả paragraphs thành 1 chuỗi liên tục (không xuống dòng)
-    full_text = " ".join([p.text.strip() for p in doc.paragraphs if p.text.strip()])
+    filename = file_path.stem  # Bỏ .docx
     
-    # Các loại dấu ngoặc kép (Unicode escape)
-    # U+201C " (left), U+201D " (right), U+0022 " (straight)
-    quote_chars = '[\u201c\u201d\u0022]'
+    # Bỏ prefix số (001_, 002_, ...)
+    name = re.sub(r'^\d+_', '', filename)
     
-    # Pattern: tìm text trong "" sau "tham gia chương trình"
-    patterns = [
-        rf'tham gia chương trình\s*{quote_chars}(.+?){quote_chars}',
-        rf'tham gia\s*{quote_chars}(.+?){quote_chars}',
-        rf'chương trình\s*{quote_chars}(.+?){quote_chars}',
-    ]
+    # Bỏ prefix QĐxx24/QĐxx25 và " - "
+    name = re.sub(r'^QĐxx\d+\s*-\s*', '', name, flags=re.IGNORECASE)
     
-    for pattern in patterns:
-        match = re.search(pattern, full_text, re.IGNORECASE | re.DOTALL)
-        if match:
-            # Làm sạch: bỏ khoảng trắng thừa
-            name = match.group(1).strip()
-            name = re.sub(r'\s+', ' ', name)
-            return name
+    # Bỏ "CÔNG NHẬN NRL" hoặc "Công nhận NRL"
+    name = re.sub(r'^(CÔNG NHẬN|Công nhận)\s+NRL\s*', '', name, flags=re.IGNORECASE)
     
-    return "Unknown"
+    # Clean up
+    name = name.strip()
+    name = re.sub(r'\s+', ' ', name)
+    
+    return name if name else "Unknown"
 
 
 def find_student_table(doc: Document) -> Optional[object]:
     """
     Tìm bảng chứa danh sách sinh viên.
-    Bảng sinh viên thường có header chứa: MSSV, Họ tên, Lớp, NRL.
+    Bảng sinh viên cần có: Họ tên + (MSSV hoặc NRL/Điểm).
+    Không bắt buộc phải có MSSV (một số file chỉ có Họ tên + Trường + Điểm).
     
     Args:
         doc: Document object
@@ -54,6 +50,9 @@ def find_student_table(doc: Document) -> Optional[object]:
     Returns:
         Table object hoặc None
     """
+    best_table = None
+    best_score = 0
+    
     for table in doc.tables:
         if len(table.rows) < 2:
             continue
@@ -62,14 +61,28 @@ def find_student_table(doc: Document) -> Optional[object]:
         header_cells = [cell.text.lower().strip() for cell in table.rows[0].cells]
         header_text = " ".join(header_cells)
         
-        # Kiểm tra có phải bảng sinh viên không
-        has_mssv = 'mssv' in header_text or 'mã sv' in header_text
+        # Tính điểm cho mỗi bảng
+        score = 0
         has_name = 'họ' in header_text or 'tên' in header_text
+        has_mssv = 'mssv' in header_text or 'mã sv' in header_text
+        has_nrl = 'nrl' in header_text or 'điểm' in header_text
+        has_stt = 'stt' in header_text
         
-        if has_mssv and has_name:
-            return table
+        if has_name:
+            score += 3
+        if has_mssv:
+            score += 2
+        if has_nrl:
+            score += 2
+        if has_stt:
+            score += 1
+        
+        # Cần ít nhất có Họ tên + (MSSV hoặc NRL)
+        if has_name and (has_mssv or has_nrl) and score > best_score:
+            best_score = score
+            best_table = table
     
-    return None
+    return best_table
 
 
 def detect_column_indices(header_row) -> Dict[str, int]:
@@ -99,7 +112,7 @@ def detect_column_indices(header_row) -> Dict[str, int]:
             indices['student_id'] = idx
         elif 'họ' in text and 'tên' in text:
             indices['name'] = idx
-        elif 'lớp' in text:
+        elif 'lớp' in text or 'trường' in text:
             indices['student_class'] = idx
         elif 'nrl' in text or 'điểm' in text or 'số nrl' in text:
             indices['score'] = idx
@@ -309,8 +322,8 @@ def parse_docx_file(file_path: Path, activity_link: str) -> Tuple[str, List[Dict
     """
     doc = Document(file_path)
     
-    # 1. Lấy tên chương trình
-    activity_name = extract_activity_name(doc)
+    # 1. Lấy tên chương trình từ tên file (đơn giản và chính xác hơn)
+    activity_name = extract_activity_name_from_filename(file_path)
     
     # 2. Tìm bảng sinh viên
     table = find_student_table(doc)
