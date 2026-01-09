@@ -15,14 +15,19 @@ def render_update_banner() -> None:
                 <span class="highlight">FULL DATA 2023 - 2025</span>
             </div>
             <div class="banner-stats">
+                <div class="stat-divider">•</div>
                 <div class="stat-item">
                     <span class="stat-icon">✨</span>
-                    <span class="stat-text"><strong>+1,448</strong> sinh viên mới</span>
+                    <span class="stat-text"><strong>+1,448</strong> mới</span>
                 </div>
                 <div class="stat-divider">•</div>
                 <div class="stat-item">
                     <span class="stat-icon">🔄</span>
-                    <span class="stat-text"><strong>3,384</strong> đã cập nhật</span>
+                    <span class="stat-text"><strong>3,384</strong> cập nhật</span>
+                </div>
+                    <div class="stat-item stat-total">
+                    <span class="stat-icon">👥</span>
+                    <span class="stat-text"><strong>8,684</strong> sinh viên</span>
                 </div>
             </div>
         </div>

@@ -209,6 +209,11 @@
     font-weight: 700;
 }
 
+.stat-item.stat-total strong {
+    color: #FFE66D;
+    font-size: 1.1em;
+}
+
 .stat-divider {
     color: rgba(255, 255, 255, 0.3);
 }
