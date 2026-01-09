@@ -115,3 +115,4 @@ def search_student(query: str) -> List[Tuple[str, Dict]]:
         # Name search (no numbers)
         return search_by_name(query, data)
 
+

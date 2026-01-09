@@ -76,13 +76,13 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     font-weight: 800;
     color: #FF6B6B;
 }
 
 .logo-icon {
-    font-size: 2rem;
+    font-size: 2.25rem;
     filter: drop-shadow(0 2px 4px rgba(255, 107, 107, 0.3));
 }
 
@@ -94,7 +94,7 @@
     background: #24292e;
     color: white;
     border-radius: 50px;
-    font-size: 0.875rem;
+    font-size: 0.95rem;
     font-weight: 500;
     text-decoration: none;
     transition: all 0.3s ease;
@@ -137,9 +137,9 @@
     display: inline-block;
     background: var(--free-badge);
     color: white;
-    padding: 0.75rem 2rem;
+    padding: 0.875rem 2.25rem;
     border-radius: 50px;
-    font-size: 1.125rem;
+    font-size: 1.25rem;
     font-weight: 800;
     margin-bottom: 1.5rem;
     box-shadow: 0 8px 25px rgba(17, 153, 142, 0.4);
@@ -154,7 +154,7 @@
 }
 
 .hero-title {
-    font-size: 2.75rem;
+    font-size: 3rem;
     font-weight: 800;
     color: #2C3E50;
     margin-bottom: 0.75rem;
@@ -162,7 +162,7 @@
 }
 
 .hero-subtitle {
-    font-size: 1.125rem;
+    font-size: 1.25rem;
     color: var(--text-secondary);
     margin-bottom: 2rem;
     font-weight: 400;
@@ -171,7 +171,7 @@
 /* ============ SEARCH BOX ============ */
 /* Target the horizontal block that contains columns (search area) */
 div[data-testid="stHorizontalBlock"] {
-    max-width: 700px !important;
+    max-width: 850px !important;
     margin: 0 auto !important;
     padding: 0 1rem !important;
     gap: 0.75rem !important;
@@ -198,10 +198,10 @@ section[data-testid="stVerticalBlock"] > div {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    font-size: 0.875rem;
+    font-size: 1rem;
     color: var(--text-secondary);
     margin-top: 0.75rem;
-    max-width: 700px;
+    max-width: 850px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -220,14 +220,14 @@ section[data-testid="stVerticalBlock"] > div {
 }
 
 .stTextInput > div > div > input {
-    border-radius: 12px !important;
+    border-radius: 14px !important;
     border: 2px solid #e0e5ec !important;
-    padding: 0.875rem 1.25rem !important;
-    font-size: 1rem !important;
+    padding: 1.125rem 1.5rem !important;
+    font-size: 1.125rem !important;
     transition: all 0.3s ease !important;
     background: white !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
-    height: 52px !important;
+    height: 60px !important;
     box-sizing: border-box !important;
 }
 
@@ -271,14 +271,14 @@ div[data-baseweb="input"]:focus-within {
     background: var(--primary-gradient) !important;
     color: white !important;
     border: none !important;
-    border-radius: 12px !important;
-    padding: 0.875rem 2rem !important;
-    font-size: 1rem !important;
+    border-radius: 14px !important;
+    padding: 1.125rem 2.5rem !important;
+    font-size: 1.125rem !important;
     font-weight: 600 !important;
     transition: all 0.3s ease !important;
     box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4) !important;
     white-space: nowrap !important;
-    height: 52px !important;
+    height: 60px !important;
     box-sizing: border-box !important;
 }
 
@@ -293,7 +293,7 @@ div[data-baseweb="input"]:focus-within {
 
 /* ============ RESULTS SECTION ============ */
 .results-container {
-    max-width: 700px;
+    max-width: 850px;
     margin: 0 auto;
     padding: 0 1rem;
 }
@@ -350,7 +350,7 @@ div[data-baseweb="input"]:focus-within {
 }
 
 .score-label {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     font-weight: 500;
     opacity: 0.9;
     text-transform: uppercase;
@@ -358,7 +358,7 @@ div[data-baseweb="input"]:focus-within {
 }
 
 .score-value {
-    font-size: 2.25rem;
+    font-size: 2.5rem;
     font-weight: 800;
     line-height: 1;
     margin-top: 0.25rem;
@@ -374,7 +374,7 @@ div[data-baseweb="input"]:focus-within {
     gap: 0.5rem;
     padding: 0.5rem 0;
     color: var(--text-secondary);
-    font-size: 0.95rem;
+    font-size: 1.05rem;
 }
 
 .info-row strong {
@@ -390,7 +390,7 @@ div[data-baseweb="input"]:focus-within {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 1rem;
+    font-size: 1.125rem;
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 1rem;
@@ -423,7 +423,7 @@ div[data-baseweb="input"]:focus-within {
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 0.75rem;
-    font-size: 0.95rem;
+    font-size: 1.05rem;
     line-height: 1.4;
 }
 
@@ -440,7 +440,7 @@ div[data-baseweb="input"]:focus-within {
     color: #FF6B6B;
     padding: 0.375rem 0.875rem;
     border-radius: 50px;
-    font-size: 0.875rem;
+    font-size: 0.95rem;
     font-weight: 700;
 }
 
@@ -452,7 +452,7 @@ div[data-baseweb="input"]:focus-within {
     color: white;
     padding: 0.5rem 1rem;
     border-radius: 50px;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     font-weight: 500;
     text-decoration: none;
     transition: all 0.3s ease;
@@ -468,13 +468,13 @@ div[data-baseweb="input"]:focus-within {
     color: var(--text-secondary);
     padding: 0.25rem 0.625rem;
     border-radius: 8px;
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     font-weight: 500;
 }
 
 /* ============ FOOTER ============ */
 .footer-container {
-    max-width: 700px;
+    max-width: 850px;
     margin: 3rem auto 0;
     padding: 2rem 1rem;
     text-align: center;
@@ -512,7 +512,7 @@ div[data-baseweb="input"]:focus-within {
 }
 
 .footer-text {
-    font-size: 0.875rem;
+    font-size: 0.95rem;
     color: var(--text-secondary);
     margin-top: 1rem;
 }
@@ -544,14 +544,14 @@ div[data-baseweb="input"]:focus-within {
 }
 
 .no-result-text {
-    font-size: 1.125rem;
+    font-size: 1.25rem;
     color: var(--text-secondary);
 }
 
 /* ============ RESPONSIVE ============ */
 @media (max-width: 768px) {
     .hero-title {
-        font-size: 2rem;
+        font-size: 2.25rem;
     }
     
     .hero-icon {
@@ -565,8 +565,53 @@ div[data-baseweb="input"]:focus-within {
         gap: 0.75rem;
     }
     
-    .stButton > button {
+    /* Force columns stack vertically on mobile */
+    div[data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 1.5rem !important;
+    }
+    
+    /* Make both columns full width */
+    div[data-testid="column"] {
         width: 100% !important;
+        max-width: 100% !important;
+        flex: 1 1 100% !important;
+    }
+    
+    /* Input full width on mobile */
+    .stTextInput {
+        width: 100% !important;
+    }
+    
+    .stTextInput > div {
+        width: 100% !important;
+    }
+    
+    /* Button container centered */
+    .stButton {
+        display: flex !important;
+        justify-content: center !important;
+        width: 100% !important;
+    }
+    
+    .stButton > button {
+        width: auto !important;
+        min-width: 200px !important;
+        max-width: 300px !important;
+        margin: 0 auto !important;
+    }
+    
+    /* Giảm kích thước placeholder text trên mobile */
+    .stTextInput > div > div > input {
+        font-size: 0.875rem !important;
+        padding: 1rem 1.25rem !important;
+        width: 100% !important;
+    }
+    
+    .stTextInput > div > div > input::placeholder {
+        font-size: 0.8rem !important;
     }
     
     .student-header {
@@ -584,6 +629,14 @@ div[data-baseweb="input"]:focus-within {
     .header-container {
         flex-direction: column;
         gap: 1rem;
+    }
+    
+    .logo {
+        font-size: 1.5rem;
+    }
+    
+    .logo-icon {
+        font-size: 2rem;
     }
 }
 
