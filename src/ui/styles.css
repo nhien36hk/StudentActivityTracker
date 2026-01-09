@@ -229,6 +229,7 @@ section[data-testid="stVerticalBlock"] > div {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
     height: 60px !important;
     box-sizing: border-box !important;
+    color: #2C3E50 !important;
 }
 
 .stTextInput > div > div > input:focus,
@@ -608,10 +609,12 @@ div[data-baseweb="input"]:focus-within {
         font-size: 0.875rem !important;
         padding: 1rem 1.25rem !important;
         width: 100% !important;
+        color: #2C3E50 !important;
     }
     
     .stTextInput > div > div > input::placeholder {
         font-size: 0.8rem !important;
+        color: #9CA3AF !important;
     }
     
     .student-header {
