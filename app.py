@@ -7,6 +7,7 @@ from pathlib import Path
 
 from src.ui.layout import render_header, render_hero, render_footer, render_search_hint
 from src.ui.cards import render_student_card, render_activity_list, render_no_result
+from src.ui.banner import render_update_banner
 from src.searcher import search_student
 from src.search_logger import log_search
 
@@ -32,6 +33,7 @@ load_css()
 
 # ============ RENDER UI ============
 render_header()
+render_update_banner()
 render_hero()
 
 # Search box - using columns (CSS targets stHorizontalBlock)
