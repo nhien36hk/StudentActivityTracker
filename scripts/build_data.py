@@ -1,5 +1,5 @@
 """
-Script xử lý dữ liệu NRL: Download từ Google Docs → Parse → Aggregate.
+Script xử lý dữ liệu NRL: Hỗ trợ cả external links (Google) và internal links (sheet).
 
 Usage:
     python scripts/build_data.py                              # File mặc định
@@ -7,8 +7,8 @@ Usage:
     python scripts/build_data.py --excel data/2023-2024.xlsx  # File Excel khác
     
 Example:
-    python scripts/build_data.py --excel data/2023-2024.xlsx
-    # Output tự động: data/students_2023-2024.json
+    python scripts/build_data.py --excel data/2022-2023.xlsx
+    # Output tự động: data/students_2022-2023.json
 """
 import sys
 import argparse
@@ -18,10 +18,12 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import json
-from src.extractor import extract_hyperlinks
-from src.downloader import download_docx, sanitize_filename
+from openpyxl import load_workbook
+from src.extractor import extract_links
+from src.downloader import download_file, sanitize_filename
 from src.parser import parse_docx_file
-from src.aggregator import load_to_dataframe, aggregate_by_student, save_json, print_summary
+from src.sheet_parser import parse_xlsx_file, parse_worksheet
+from src.aggregator import aggregate_by_student, save_json, print_summary
 
 
 # ============ DEFAULT PATHS ============
@@ -34,28 +36,28 @@ RAW_OUTPUT = Path("data/raw_activities.json")
 FINAL_OUTPUT = Path("data/students.json")
 
 
-def process_single_link(display_text: str, url: str, index: int) -> dict:
-    """Download và parse một link."""
+def process_external_link(display_text: str, url: str, index: int) -> dict:
+    """Download và parse external link (Google Docs/Sheets)."""
     print(f"\n{'='*60}")
-    print(f"📄 [{index}] {display_text[:50]}...")
+    print(f"🌐 [{index}] {display_text[:50]}...")
     
-    # Tạo tên file
     filename = sanitize_filename(f"{index:03d}_{display_text}")
-    if not filename.endswith('.docx'):
-        filename += '.docx'
     file_path = DOWNLOAD_DIR / filename
     
-    # Download
     print(f"⬇️  Downloading...")
-    success = download_docx(url, file_path)
+    success, file_ext = download_file(url, file_path)
     
     if not success:
         print(f"❌ Download failed!")
         return {'error': 'Download failed', 'url': url, 'students': []}
     
-    # Parse
-    print(f"🔍 Parsing...")
-    activity_name, students = parse_docx_file(file_path, url)
+    actual_path = file_path.with_suffix(f'.{file_ext}')
+    
+    print(f"🔍 Parsing ({file_ext})...")
+    if file_ext == 'xlsx':
+        activity_name, students = parse_xlsx_file(actual_path, url)
+    else:
+        activity_name, students = parse_docx_file(actual_path, url)
     
     print(f"✅ {activity_name[:40]}... | {len(students)} sinh viên")
     
@@ -67,25 +69,76 @@ def process_single_link(display_text: str, url: str, index: int) -> dict:
     }
 
 
-def step1_download_and_parse(limit: int | None) -> list:
-    """Bước 1: Download tất cả files và parse."""
+def process_internal_link(workbook, sheet_name: str, display_text: str, index: int) -> dict:
+    """Parse internal link (sheet trong cùng file Excel)."""
+    print(f"\n{'='*60}")
+    print(f"📑 [{index}] {display_text[:50]}...")
+    
+    if sheet_name not in workbook.sheetnames:
+        print(f"❌ Sheet không tồn tại: {sheet_name}")
+        return {'error': 'Sheet not found', 'students': []}
+    
+    worksheet = workbook[sheet_name]
+    activity_name = display_text or sheet_name
+    
+    print(f"🔍 Parsing sheet: {sheet_name[:40]}...")
+    students = parse_worksheet(worksheet, activity_name, activity_link="")
+    
+    print(f"✅ {activity_name[:40]}... | {len(students)} sinh viên")
+    
+    return {
+        'activity_name': activity_name,
+        'activity_link': f"[Internal] {sheet_name}",
+        'student_count': len(students),
+        'students': students
+    }
+
+
+def step1_extract_and_parse(limit: int | None) -> list:
+    """Bước 1: Extract links và parse (hỗ trợ cả external và internal)."""
     print("\n" + "="*60)
-    print("📥 BƯỚC 1: DOWNLOAD & PARSE")
+    print("📥 BƯỚC 1: EXTRACT & PARSE")
     print("="*60)
     
     DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
     
     # Extract links
     print(f"\n📂 Đọc file Excel: {EXCEL_PATH}")
-    links = extract_hyperlinks(EXCEL_PATH, limit=limit)
-    total = len(links)
-    print(f"✅ Tìm thấy {total} links" + (f" (giới hạn {limit})" if limit else ""))
+    links = extract_links(EXCEL_PATH, limit=limit)
+    
+    # Count link types
+    external_count = sum(1 for l in links if l['link_type'] == 'external')
+    internal_count = sum(1 for l in links if l['link_type'] == 'internal')
+    
+    print(f"✅ Tìm thấy {len(links)} links:")
+    print(f"   🌐 External (Google): {external_count}")
+    print(f"   📑 Internal (Sheet):  {internal_count}")
+    if limit:
+        print(f"   (giới hạn {limit})")
+    
+    # Load workbook một lần cho internal links
+    wb = load_workbook(EXCEL_PATH) if internal_count > 0 else None
     
     # Process từng link
     results = []
-    for idx, (display_text, url) in enumerate(links, 1):
-        result = process_single_link(display_text, url, idx)
+    for idx, link_info in enumerate(links, 1):
+        if link_info['link_type'] == 'external':
+            result = process_external_link(
+                link_info['display_text'], 
+                link_info['url'], 
+                idx
+            )
+        else:
+            result = process_internal_link(
+                wb,
+                link_info['sheet_name'],
+                link_info['display_text'],
+                idx
+            )
         results.append(result)
+    
+    if wb:
+        wb.close()
     
     # Lưu raw data
     print(f"\n💾 Lưu raw data: {RAW_OUTPUT}")
@@ -135,7 +188,7 @@ def main():
     global EXCEL_PATH, DOWNLOAD_DIR, RAW_OUTPUT, FINAL_OUTPUT
     
     parser = argparse.ArgumentParser(
-        description="Build NRL data: Download → Parse → Aggregate"
+        description="Build NRL data: Extract → Parse → Aggregate"
     )
     parser.add_argument(
         '-l', '--limit',
@@ -165,8 +218,8 @@ def main():
     print(f"   📂 Output: {FINAL_OUTPUT}")
     print(f"   🔢 Limit:  {args.limit if args.limit else 'ALL'}")
     
-    # Bước 1: Download & Parse
-    raw_data = step1_download_and_parse(args.limit)
+    # Bước 1: Extract & Parse
+    raw_data = step1_extract_and_parse(args.limit)
     
     # Bước 2: Aggregate
     final_data = step2_aggregate(raw_data)
@@ -182,4 +235,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
