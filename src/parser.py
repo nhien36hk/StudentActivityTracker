@@ -7,35 +7,40 @@ import re
 from docx import Document
 
 
-def extract_activity_name_from_filename(file_path: Path) -> str:
+def extract_activity_name(doc: Document) -> str:
     """
-    Trích xuất tên chương trình từ tên file.
-    
-    Tên file format: "001_QĐxx24 - CÔNG NHẬN NRL WORKSHOP XYZ.docx"
-    → Lấy phần sau "NRL " hoặc sau " - "
+    Trích xuất tên chương trình từ document.
+    Tìm text trong dấu "" sau cụm "tham gia chương trình".
     
     Args:
-        file_path: Path của file
+        doc: Document object
         
     Returns:
-        Tên chương trình
+        Tên chương trình hoặc "Unknown"
     """
-    filename = file_path.stem  # Bỏ .docx
+    # Ghép tất cả paragraphs thành 1 chuỗi liên tục (không xuống dòng)
+    full_text = " ".join([p.text.strip() for p in doc.paragraphs if p.text.strip()])
     
-    # Bỏ prefix số (001_, 002_, ...)
-    name = re.sub(r'^\d+_', '', filename)
+    # Các loại dấu ngoặc kép (Unicode escape)
+    # U+201C " (left), U+201D " (right), U+0022 " (straight)
+    quote_chars = '[\u201c\u201d\u0022]'
     
-    # Bỏ prefix QĐxx24/QĐxx25 và " - "
-    name = re.sub(r'^QĐxx\d+\s*-\s*', '', name, flags=re.IGNORECASE)
+    # Pattern: tìm text trong "" sau "tham gia chương trình"
+    patterns = [
+        rf'tham gia chương trình\s*{quote_chars}(.+?){quote_chars}',
+        rf'tham gia\s*{quote_chars}(.+?){quote_chars}',
+        rf'chương trình\s*{quote_chars}(.+?){quote_chars}',
+    ]
     
-    # Bỏ "CÔNG NHẬN NRL" hoặc "Công nhận NRL"
-    name = re.sub(r'^(CÔNG NHẬN|Công nhận)\s+NRL\s*', '', name, flags=re.IGNORECASE)
+    for pattern in patterns:
+        match = re.search(pattern, full_text, re.IGNORECASE | re.DOTALL)
+        if match:
+            # Làm sạch: bỏ khoảng trắng thừa
+            name = match.group(1).strip()
+            name = re.sub(r'\s+', ' ', name)
+            return name
     
-    # Clean up
-    name = name.strip()
-    name = re.sub(r'\s+', ' ', name)
-    
-    return name if name else "Unknown"
+    return "Unknown"
 
 
 def find_student_table(doc: Document) -> Optional[object]:
@@ -322,8 +327,8 @@ def parse_docx_file(file_path: Path, activity_link: str) -> Tuple[str, List[Dict
     """
     doc = Document(file_path)
     
-    # 1. Lấy tên chương trình từ tên file (đơn giản và chính xác hơn)
-    activity_name = extract_activity_name_from_filename(file_path)
+    # 1. Lấy tên chương trình từ tài liệu
+    activity_name = extract_activity_name(doc)
     
     # 2. Tìm bảng sinh viên
     table = find_student_table(doc)

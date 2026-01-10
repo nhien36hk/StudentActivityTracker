@@ -1,18 +1,7 @@
-"""
-Script xử lý dữ liệu NRL: Hỗ trợ cả external links (Google) và internal links (sheet).
-
-Usage:
-    python scripts/build_data.py                              # File mặc định
-    python scripts/build_data.py --limit 5                    # Test 5 links
-    python scripts/build_data.py --excel data/2023-2024.xlsx  # File Excel khác
-    
-Example:
-    python scripts/build_data.py --excel data/2022-2023.xlsx
-    # Output tự động: data/students_2022-2023.json
-"""
 import sys
 import argparse
 from pathlib import Path
+import pandas as pd
 
 # Thêm parent folder vào sys.path để import src
 sys.path.append(str(Path(__file__).resolve().parent.parent))
@@ -168,8 +157,6 @@ def step2_aggregate(raw_data: list) -> dict:
         print("⚠️ Không có sinh viên nào!")
         return {}
     
-    # Convert to DataFrame và aggregate
-    import pandas as pd
     df = pd.DataFrame(all_students)
     print(f"📋 DataFrame: {len(df)} rows")
     

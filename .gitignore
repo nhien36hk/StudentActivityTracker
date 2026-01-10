@@ -13,8 +13,10 @@ ENV/
 .streamlit/
 
 # Data files
-data/downloaded/*.docx
-data/search_logs.json
+*.docx
+*.json
+*.xlsx
+
 
 # IDE
 .vscode/
