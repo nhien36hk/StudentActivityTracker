@@ -21,6 +21,9 @@ def detect_columns(df: pd.DataFrame) -> Dict[str, str]:
     
     for col in df.columns:
         col_lower = str(col).lower().strip()
+
+        if 'nrl' in col_lower and len(col_lower) > 20:
+            continue
         
         if 'stt' in col_lower:
             columns['stt'] = col
