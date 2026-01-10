@@ -1,124 +1,238 @@
 """
 Module download file từ Google Docs/Sheets.
+Hỗ trợ tự động chuyển đổi giữa Public Download và Authenticated API.
 """
+import io
+import re
 from pathlib import Path
 from typing import Optional, Tuple
-import re
+
 import requests
 
+from src.google_auth import (
+    GoogleAuth,
+    GOOGLE_API_AVAILABLE,
+    GOOGLE_DOC_MIME,
+    GOOGLE_SHEET_MIME,
+    DOCX_MIME,
+    XLSX_MIME,
+    HttpError,
+    MediaIoBaseDownload,
+)
 
-# ============ FILE TYPE DETECTION ============
-def detect_google_type(google_url: str) -> str:
+
+# ============ URL UTILITIES ============
+def detect_google_type(url: str) -> str:
     """
     Detect loại file Google từ URL.
     
     Returns:
-        'document', 'spreadsheet', 'file', hoặc 'unknown'
+        'document' | 'spreadsheet' | 'file' | 'unknown'
     """
-    if '/document/d/' in google_url:
+    if '/document/d/' in url:
         return 'document'
-    elif '/spreadsheets/d/' in google_url:
+    if '/spreadsheets/d/' in url:
         return 'spreadsheet'
-    elif '/file/d/' in google_url:
+    if '/file/d/' in url:
         return 'file'
     return 'unknown'
 
 
-# ============ EXTRACT ID ============
-def extract_google_id(google_url: str) -> Optional[str]:
-    """
-    Trích xuất ID từ Google URL (Docs, Sheets, Drive).
-    
-    Returns:
-        Google ID hoặc None
-    """
+def extract_google_id(url: str) -> Optional[str]:
+    """Trích xuất File ID từ Google URL."""
     patterns = [
         r'/document/d/([a-zA-Z0-9_-]+)',
         r'/spreadsheets/d/([a-zA-Z0-9_-]+)',
         r'/file/d/([a-zA-Z0-9_-]+)',
     ]
-    
     for pattern in patterns:
-        match = re.search(pattern, google_url)
-        if match:
+        if match := re.search(pattern, url):
             return match.group(1)
     return None
 
 
-# ============ BUILD EXPORT URL ============
-def build_export_url(google_id: str, file_type: str) -> str:
-    """
-    Tạo URL export dựa vào loại file.
-    """
+def sanitize_filename(filename: str, max_length: int = 100) -> str:
+    """Làm sạch tên file, loại bỏ ký tự không hợp lệ."""
+    invalid_chars = r'[<>:"/\\|?*]'
+    clean_name = re.sub(invalid_chars, '_', filename)
+    
+    if len(clean_name) > max_length:
+        clean_name = clean_name[:max_length - 5] + ".docx"
+    
+    return clean_name.strip()
+
+
+# ============ DOWNLOAD: PUBLIC ============
+def _build_export_url(file_id: str, file_type: str) -> Tuple[str, str]:
+    """Tạo URL export cho Google file."""
     if file_type == 'spreadsheet':
-        return f"https://docs.google.com/spreadsheets/d/{google_id}/export?format=xlsx"
-    else:
-        return f"https://docs.google.com/document/d/{google_id}/export?format=docx"
+        url = f"https://docs.google.com/spreadsheets/d/{file_id}/export?format=xlsx"
+        return url, 'xlsx'
+    
+    url = f"https://docs.google.com/document/d/{file_id}/export?format=docx"
+    return url, 'docx'
 
 
-# ============ DOWNLOAD ============
-def download_file(google_url: str, save_path: Path, timeout: int = 30) -> Tuple[bool, str]:
+def _download_public(url: str, save_path: Path, timeout: int = 30) -> Tuple[bool, str]:
     """
-    Download file từ Google URL (tự detect loại).
+    Download file công khai bằng requests (nhanh, không cần auth).
     
     Returns:
-        Tuple (success, file_type) - file_type là 'docx' hoặc 'xlsx'
+        (success, file_extension)
     """
-    file_type = detect_google_type(google_url)
-    google_id = extract_google_id(google_url)
-    
-    if not google_id:
-        print(f"❌ Không thể extract ID từ: {google_url[:50]}...")
+    file_id = extract_google_id(url)
+    if not file_id:
         return False, ''
     
-    export_url = build_export_url(google_id, file_type)
-    ext = 'xlsx' if file_type == 'spreadsheet' else 'docx'
+    file_type = detect_google_type(url)
+    export_url, ext = _build_export_url(file_id, file_type)
     
     try:
         response = requests.get(export_url, timeout=timeout)
         response.raise_for_status()
         
+        # Check: Nếu trả về HTML => bị redirect login
         content_type = response.headers.get('content-type', '')
         if 'application' not in content_type:
-            print(f"❌ File không phải document: {content_type}")
             return False, ''
         
-        # Đổi extension nếu cần
-        if save_path.suffix != f'.{ext}':
-            save_path = save_path.with_suffix(f'.{ext}')
-        
-        save_path.parent.mkdir(parents=True, exist_ok=True)
-        save_path.write_bytes(response.content)
+        # Save file
+        final_path = save_path.with_suffix(f'.{ext}')
+        final_path.parent.mkdir(parents=True, exist_ok=True)
+        final_path.write_bytes(response.content)
         return True, ext
         
-    except requests.RequestException as e:
-        print(f"❌ Lỗi download: {e}")
+    except Exception:
         return False, ''
 
 
+# ============ DOWNLOAD: AUTHENTICATED ============
+def _detect_extension(mime_type: str, filename: str) -> str:
+    """Xác định extension từ mime type hoặc filename."""
+    if '.' in filename:
+        return filename.split('.')[-1]
+    
+    if 'word' in mime_type:
+        return 'docx'
+    if 'spreadsheet' in mime_type or 'excel' in mime_type:
+        return 'xlsx'
+    if 'pdf' in mime_type:
+        return 'pdf'
+    
+    return 'bin'
+
+
+def _create_download_request(service, file_id: str, mime_type: str, filename: str):
+    """Tạo request download phù hợp với loại file."""
+    # Google Doc gốc -> Export ra DOCX
+    if mime_type == GOOGLE_DOC_MIME:
+        return service.files().export_media(fileId=file_id, mimeType=DOCX_MIME), 'docx'
+    
+    # Google Sheet gốc -> Export ra XLSX
+    if mime_type == GOOGLE_SHEET_MIME:
+        return service.files().export_media(fileId=file_id, mimeType=XLSX_MIME), 'xlsx'
+    
+    # File binary (Word, PDF...) -> Download trực tiếp
+    ext = _detect_extension(mime_type, filename)
+    return service.files().get_media(fileId=file_id), ext
+
+
+def _download_authenticated(url: str, save_path: Path) -> Tuple[bool, str]:
+    """
+    Download sử dụng Google Drive API.
+    Tự động xử lý Google Docs và file binary.
+    """
+    file_id = extract_google_id(url)
+    service = GoogleAuth.get_service()
+    
+    if not file_id or not service:
+        return False, ''
+    
+    try:
+        # Get file metadata
+        metadata = service.files().get(fileId=file_id, fields='name, mimeType').execute()
+        mime_type = metadata.get('mimeType', '')
+        filename = metadata.get('name', 'file')
+        print(f"   ℹ️  File Type: {mime_type}")
+        
+        # Create appropriate request
+        request, ext = _create_download_request(service, file_id, mime_type, filename)
+        
+        # Download
+        final_path = save_path.with_suffix(f'.{ext}')
+        final_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        buffer = io.BytesIO()
+        downloader = MediaIoBaseDownload(buffer, request)
+        
+        done = False
+        while not done:
+            _, done = downloader.next_chunk()
+        
+        final_path.write_bytes(buffer.getbuffer())
+        return True, ext
+        
+    except HttpError as err:
+        if err.resp.status == 403:
+            print("❌ Lỗi 403: Không có quyền truy cập file này.")
+        else:
+            print(f"❌ API Error: {err}")
+        return False, ''
+    except Exception as e:
+        print(f"❌ System Error: {e}")
+        return False, ''
+
+
+# ============ MAIN ORCHESTRATOR ============
+def download_file(url: str, save_path: Path, timeout: int = 30) -> Tuple[bool, str]:
+    """
+    Hàm chính download file từ Google.
+    
+    Strategy:
+        1. Thử Public download (nhanh)
+        2. Fallback sang Authenticated API nếu cần
+    
+    Args:
+        url: Google Docs/Sheets URL
+        save_path: Đường dẫn lưu file (không cần extension)
+        timeout: Timeout cho public download
+        
+    Returns:
+        (success, file_extension)
+    """
+    # Try public first (fast path)
+    success, ext = _download_public(url, save_path, timeout)
+    if success:
+        return True, ext
+    
+    # Fallback to authenticated
+    print(f"⚠️ Link yêu cầu quyền truy cập: {url[:40]}...")
+    print("🔄 Đang chuyển sang Google Drive API...")
+    
+    return _download_authenticated(url, save_path)
+
+
 # ============ LEGACY SUPPORT ============
-def download_docx(google_url: str, save_path: Path, timeout: int = 30) -> bool:
+def download_docx(url: str, save_path: Path, timeout: int = 30) -> bool:
     """Legacy function - giữ tương thích ngược."""
-    success, _ = download_file(google_url, save_path, timeout)
+    success, _ = download_file(url, save_path, timeout)
     return success
 
 
-def sanitize_filename(filename: str, max_length: int = 100) -> str:
-    """
-    Làm sạch tên file, loại bỏ ký tự không hợp lệ.
+# ============ TEST ============
+if __name__ == "__main__":
+    print("🚀 TEST DOWNLOAD MODULE\n")
     
-    Args:
-        filename: Tên file gốc
-        max_length: Độ dài tối đa
-        
-    Returns:
-        Tên file đã làm sạch
-    """
-    invalid_chars = r'[<>:"/\\|?*]'
-    clean_name = re.sub(invalid_chars, '_', filename)
+    test_dir = Path("data/test_downloads")
+    test_dir.mkdir(parents=True, exist_ok=True)
     
-    if len(clean_name) > max_length:
-        name_part = clean_name[:max_length - 5]
-        clean_name = name_part + ".docx"
+    # Test public file
+    public_url = "https://docs.google.com/document/d/1wRv7tfpsXJ7VNAZGknCrn7gUhzkyzyggYZh2kVOrSAU/edit"
+    save_path = test_dir / "test_public"
     
-    return clean_name.strip()
+    print("1️⃣ Test Public Download:")
+    success, ext = download_file(public_url, save_path)
+    status = "✅ OK" if success else "❌ Failed"
+    print(f"   {status} -> {save_path}.{ext}\n")
+    
+    print("🏁 Done.")
