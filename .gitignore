@@ -15,7 +15,6 @@ ENV/
 # Data files
 data/downloaded/*.docx
 data/search_logs.json
-data/*.xlsx
 
 # IDE
 .vscode/
@@ -34,6 +33,10 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.bak
+
+# Dataset
+*.xlsx
+*.json
 
 
 
