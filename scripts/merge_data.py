@@ -72,6 +72,7 @@ def merge_student_data(old_data: dict, new_data: dict) -> dict:
             
             for activity in student.get('history', []):
                 if activity['activity_link'] not in existing_links:
+                    updated_count += 1
                     existing['history'].append(activity)
             
             # Tính lại stats
@@ -80,8 +81,6 @@ def merge_student_data(old_data: dict, new_data: dict) -> dict:
                 'total_score': total_score,
                 'activity_count': len(existing['history'])
             }
-            
-            updated_count += 1
     
     return merged, new_count, updated_count
 
