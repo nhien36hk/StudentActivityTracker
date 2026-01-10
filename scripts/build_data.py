@@ -69,7 +69,7 @@ def process_external_link(display_text: str, url: str, index: int) -> dict:
     }
 
 
-def process_internal_link(workbook, sheet_name: str, display_text: str, index: int) -> dict:
+def process_internal_link(workbook, sheet_name: str, display_text: str, url: str, index: int) -> dict:
     """Parse internal link (sheet trong cùng file Excel)."""
     print(f"\n{'='*60}")
     print(f"📑 [{index}] {display_text[:50]}...")
@@ -82,13 +82,13 @@ def process_internal_link(workbook, sheet_name: str, display_text: str, index: i
     activity_name = display_text or sheet_name
     
     print(f"🔍 Parsing sheet: {sheet_name[:40]}...")
-    students = parse_worksheet(worksheet, activity_name, activity_link="")
+    students = parse_worksheet(worksheet, activity_name, activity_link=url)
     
     print(f"✅ {activity_name[:40]}... | {len(students)} sinh viên")
     
     return {
         'activity_name': activity_name,
-        'activity_link': f"[Internal] {sheet_name}",
+        'activity_link': url,  # Giữ link gốc
         'student_count': len(students),
         'students': students
     }
@@ -133,6 +133,7 @@ def step1_extract_and_parse(limit: int | None) -> list:
                 wb,
                 link_info['sheet_name'],
                 link_info['display_text'],
+                link_info['url'],  # Link gốc (location)
                 idx
             )
         results.append(result)

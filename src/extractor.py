@@ -78,10 +78,12 @@ def extract_links(excel_path: Path, limit: int | None = None) -> List[Dict[str, 
         elif cell.hyperlink.location:
             sheet_name = parse_sheet_location(cell.hyperlink.location)
             if sheet_name and sheet_name in wb.sheetnames:
+                # Ưu tiên dùng URL trong cell value nếu có, không thì dùng location
+                url = display_text if display_text.startswith('http') else cell.hyperlink.location
                 links.append({
                     'display_text': display_text,
                     'link_type': 'internal',
-                    'url': None,
+                    'url': url,
                     'sheet_name': sheet_name,
                 })
     

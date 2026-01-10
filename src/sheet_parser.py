@@ -31,7 +31,7 @@ def detect_columns(df: pd.DataFrame) -> Dict[str, str]:
             columns['name'] = col
         elif 'lớp' in col_lower or 'đơn vị' in col_lower:
             columns['student_class'] = col
-        elif 'nrl' in col_lower or 'điểm' in col_lower or 'rèn luyện' in col_lower:
+        elif 'nrl' in col_lower or 'điểm' in col_lower:
             columns['score'] = col
     
     return columns
@@ -72,15 +72,23 @@ def smart_swap_id_class(raw_id: str, raw_class: str) -> Tuple[str, str]:
 
 
 def parse_score(score_val) -> float:
-    """Parse điểm NRL."""
+    """Parse điểm NRL. Bỏ qua datetime và giá trị bất thường."""
+    from datetime import datetime
+    
     if pd.isna(score_val):
+        return 0.0
+    
+    # Skip datetime (lỗi data trong Excel)
+    if isinstance(score_val, datetime):
         return 0.0
     
     clean_text = str(score_val).strip().replace(',', '.')
     match = re.search(r'(\d+\.?\d*)', clean_text)
     if match:
         try:
-            return float(match.group(1))
+            score = float(match.group(1))
+            # Điểm NRL hợp lệ thường < 100, nếu > 1000 có thể là năm
+            return score if score < 1000 else 0.0
         except ValueError:
             return 0.0
     return 0.0
@@ -213,14 +221,40 @@ def parse_worksheet(worksheet: Worksheet, activity_name: str, activity_link: str
     if not data_rows:
         return []
     
-    # Tạo DataFrame
-    df = pd.DataFrame(data_rows, columns=headers)
+    # Xử lý cột trùng tên: thêm suffix để unique
+    unique_headers = []
+    seen = {}
+    for h in headers:
+        h_str = str(h) if h else 'None'
+        if h_str in seen:
+            seen[h_str] += 1
+            unique_headers.append(f"{h_str}_{seen[h_str]}")
+        else:
+            seen[h_str] = 0
+            unique_headers.append(h_str)
+    
+    # Tạo DataFrame với headers unique
+    df = pd.DataFrame(data_rows, columns=unique_headers)
     
     if df.empty:
         return []
     
-    # Detect columns
-    cols = detect_columns(df)
+    # Detect columns (dùng headers gốc để detect, nhưng map sang unique)
+    # Tạo df tạm với headers gốc để detect
+    df_temp = pd.DataFrame(data_rows, columns=[str(h) if h else 'None' for h in headers])
+    cols = detect_columns(df_temp)
+    
+    # Map column names sang unique headers
+    for key in cols:
+        original = cols[key]
+        if original in unique_headers:
+            continue
+        # Tìm index của cột gốc
+        try:
+            idx = [str(h) if h else 'None' for h in headers].index(str(original))
+            cols[key] = unique_headers[idx]
+        except ValueError:
+            pass
     
     if 'name' not in cols:
         print(f"⚠️ Không tìm thấy cột Họ tên trong sheet (header row {header_row})")
@@ -228,17 +262,28 @@ def parse_worksheet(worksheet: Worksheet, activity_name: str, activity_link: str
     
     students = []
     
+    def safe_get(row, col_name, default=None):
+        """Lấy giá trị từ row, xử lý trường hợp Series (cột trùng tên)."""
+        val = row.get(col_name, default)
+        # Nếu là Series (do cột trùng tên), lấy giá trị đầu tiên
+        if isinstance(val, pd.Series):
+            val = val.iloc[0] if len(val) > 0 else default
+        return val
+    
     for idx, row in df.iterrows():
-        # Lấy giá trị, xử lý NaN bằng pd.notna()
-        stt_val = row.get(cols.get('stt', ''), None)
-        stt = int(stt_val) if pd.notna(stt_val) else idx + 1
+        # Lấy STT
+        stt_val = safe_get(row, cols.get('stt', ''), None)
+        try:
+            stt = int(stt_val) if pd.notna(stt_val) else idx + 1
+        except (ValueError, TypeError):
+            stt = idx + 1
         
-        name_val = row.get(cols.get('name', ''), '')
+        name_val = safe_get(row, cols.get('name', ''), '')
         name = str(name_val).strip() if pd.notna(name_val) else ""
         
-        raw_id = row.get(cols.get('student_id', ''), '')
-        raw_class = row.get(cols.get('student_class', ''), '')
-        score_val = row.get(cols.get('score', ''), 0)
+        raw_id = safe_get(row, cols.get('student_id', ''), '')
+        raw_class = safe_get(row, cols.get('student_class', ''), '')
+        score_val = safe_get(row, cols.get('score', ''), 0)
         
         # Smart swap
         student_id, student_class = smart_swap_id_class(raw_id, raw_class)
