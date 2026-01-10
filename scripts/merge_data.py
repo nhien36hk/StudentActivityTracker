@@ -20,7 +20,7 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 
 # ============ DEFAULT PATHS ============
-DEFAULT_OLD = Path("data/students.json")
+DEFAULT_OLD = Path("data/students_merged.json")
 DEFAULT_NEW = Path("data/students_new.json")
 DEFAULT_OUTPUT = Path("data/students_merged.json")
 

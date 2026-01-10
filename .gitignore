@@ -34,6 +34,13 @@ Thumbs.db
 *.tmp
 *.bak
 
+# Dataset
+*.xlsx
+*.json
+
+
+
+
 
 
 
