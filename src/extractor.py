@@ -10,6 +10,12 @@ from typing import List, Tuple, Dict, Any
 from openpyxl import load_workbook
 import re
 
+MASTER_LINK = {
+    2020: 'https://docs.google.com/spreadsheets/d/1QWdhplM8SzatAbQUG5N8xlefUCZGEIfZ/edit?gid=1391010033#gid=1391010033',
+    2021: None,
+    2022: 'https://docs.google.com/spreadsheets/d/1fWDcSwa9p3lbOceJOaBluFqGT9JPPwiF/edit?gid=1627022443#gid=1627022443',
+}
+
 
 def get_file_year(excel_path: Path) -> int:
     """Lấy năm từ tên file. VD: '2022-2023.xlsx' → 2022"""
@@ -86,11 +92,10 @@ def extract_links(excel_path: Path, limit: int | None = None) -> List[Dict[str, 
         if is_old_file and location:
             sheet_name = parse_sheet_location(location)
             if sheet_name and sheet_name in wb.sheetnames:
-                url = display_text if display_text.startswith('http') else location
                 links.append({
                     'display_text': display_text,
                     'link_type': 'internal',
-                    'url': url,
+                    'url': MASTER_LINK[file_year] if not file_year == 2021 else display_text,
                     'sheet_name': sheet_name,
                 })
         

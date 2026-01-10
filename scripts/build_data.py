@@ -68,7 +68,7 @@ def process_internal_link(workbook, sheet_name: str, display_text: str, url: str
         return {'error': 'Sheet not found', 'students': []}
     
     worksheet = workbook[sheet_name]
-    activity_name = display_text or sheet_name
+    activity_name = sheet_name
     
     print(f"🔍 Parsing sheet: {sheet_name[:40]}...")
     students = parse_worksheet(worksheet, activity_name, activity_link=url)
@@ -122,7 +122,7 @@ def step1_extract_and_parse(limit: int | None) -> list:
                 wb,
                 link_info['sheet_name'],
                 link_info['display_text'],
-                link_info['url'],  # Link gốc (location)
+                link_info['url'],
                 idx
             )
         results.append(result)
