@@ -290,16 +290,23 @@ def parse_worksheet(worksheet: Worksheet, activity_name: str, activity_link: str
         student_id = clean_student_id(student_id)
         student_class = str(student_class).strip() if pd.notna(student_class) else ""
         
-        # Skip row rỗng
-        if not student_id and not name:
+        # Check invalid values
+        invalid_ids = ['', 'NAN', 'NONE', 'NULL']
+        invalid_names = ['', 'nan', 'none', 'null']
+        
+        id_is_invalid = not student_id or student_id in invalid_ids
+        name_is_invalid = not name or name.lower() in invalid_names
+        
+        # Skip nếu CẢ HAI đều invalid
+        if id_is_invalid and name_is_invalid:
             continue
         
-        # Mark unknown
-        if not name:
+        # Mark unknown (chỉ khi 1 trong 2 có giá trị)
+        if name_is_invalid:
             name = "UNKNOWN_NAME"
-        if not student_id:
+        if id_is_invalid:
             student_id = f"UNKNOWN_ID_{stt}"
-        if not student_class:
+        if not student_class or student_class.lower() in ['nan', 'none', 'null']:
             student_class = "UNKNOWN_CLASS"
         
         students.append({
