@@ -214,7 +214,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👨‍💻 Author
 
-**Nhien Nguyen**
+**Nhien Dinh**
 
 - GitHub: [@nhien36hk](https://github.com/nhien36hk)
 - Project Link: [https://github.com/nhien36hk/StudentActivityTracker](https://github.com/nhien36hk/StudentActivityTracker)
