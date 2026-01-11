@@ -23,6 +23,10 @@ EXCEL_PATH = DEFAULT_EXCEL
 DOWNLOAD_DIR = Path("data/downloaded")
 RAW_OUTPUT = Path("data/raw_activities.json")
 FINAL_OUTPUT = Path("data/students.json")
+ERROR_LOG = Path("data/error_links.json")
+
+# Track failed links
+FAILED_LINKS: list[dict] = []
 
 
 def process_external_link(display_text: str, url: str, index: int) -> dict:
@@ -38,6 +42,12 @@ def process_external_link(display_text: str, url: str, index: int) -> dict:
     
     if not success:
         print(f"❌ Download failed!")
+        FAILED_LINKS.append({
+            'index': index,
+            'display_text': display_text,
+            'url': url,
+            'error': 'Download failed'
+        })
         return {'error': 'Download failed', 'url': url, 'students': []}
     
     actual_path = file_path.with_suffix(f'.{file_ext}')
@@ -65,6 +75,13 @@ def process_internal_link(workbook, sheet_name: str, display_text: str, url: str
     
     if sheet_name not in workbook.sheetnames:
         print(f"❌ Sheet không tồn tại: {sheet_name}")
+        FAILED_LINKS.append({
+            'index': index,
+            'display_text': display_text,
+            'url': url,
+            'sheet_name': sheet_name,
+            'error': 'Sheet not found'
+        })
         return {'error': 'Sheet not found', 'students': []}
     
     worksheet = workbook[sheet_name]
@@ -139,7 +156,28 @@ def step1_extract_and_parse(limit: int | None) -> list:
     total_students = sum(r.get('student_count', 0) for r in results)
     print(f"📊 Tổng: {len(results)} chương trình | {total_students} records")
     
+    # Save error log nếu có
+    if FAILED_LINKS:
+        save_error_log()
+    
     return results
+
+
+def save_error_log() -> None:
+    """Lưu danh sách các link bị lỗi ra file JSON."""
+    print(f"\n⚠️ Có {len(FAILED_LINKS)} link bị lỗi!")
+    print(f"💾 Lưu error log: {ERROR_LOG}")
+    
+    ERROR_LOG.parent.mkdir(parents=True, exist_ok=True)
+    with open(ERROR_LOG, 'w', encoding='utf-8') as f:
+        json.dump({
+            'total_errors': len(FAILED_LINKS),
+            'failed_links': FAILED_LINKS
+        }, f, ensure_ascii=False, indent=2)
+    
+    # Print summary
+    for item in FAILED_LINKS:
+        print(f"   ❌ [{item['index']}] {item['display_text'][:40]}... - {item['error']}")
 
 
 def step2_aggregate(raw_data: list) -> dict:
@@ -173,7 +211,7 @@ def step2_aggregate(raw_data: list) -> dict:
 
 
 def main():
-    global EXCEL_PATH, DOWNLOAD_DIR, RAW_OUTPUT, FINAL_OUTPUT
+    global EXCEL_PATH, DOWNLOAD_DIR, RAW_OUTPUT, FINAL_OUTPUT, ERROR_LOG
     
     parser = argparse.ArgumentParser(
         description="Build NRL data: Extract → Parse → Aggregate"
@@ -199,6 +237,7 @@ def main():
         DOWNLOAD_DIR = Path(f"data/downloaded_{excel_name}")
         RAW_OUTPUT = Path(f"data/raw_{excel_name}.json")
         FINAL_OUTPUT = Path(f"data/students_{excel_name}.json")
+        ERROR_LOG = Path(f"data/error_{excel_name}.json")
     
     print("🚀 NRL DATA BUILDER")
     print("="*60)
@@ -219,6 +258,8 @@ def main():
     print(f"   📁 Raw data:   {RAW_OUTPUT}")
     print(f"   📁 Final data: {FINAL_OUTPUT}")
     print(f"   👥 Sinh viên:  {len(final_data)}")
+    if FAILED_LINKS:
+        print(f"   ⚠️ Lỗi:       {len(FAILED_LINKS)} links (xem {ERROR_LOG})")
 
 
 if __name__ == "__main__":
