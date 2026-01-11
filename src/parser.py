@@ -113,7 +113,7 @@ def detect_column_indices(header_row) -> Dict[str, int]:
             indices['name'] = idx
         elif 'lớp' in text or 'trường' in text:
             indices['student_class'] = idx
-        elif 'nrl' in text or 'điểm' in text or 'số nrl' in text:
+        elif 'nrl' in text or 'điểm' in text or 'số nrl' in text or 'số ntn' in text:
             indices['score'] = idx
     
     return indices
@@ -276,7 +276,7 @@ def parse_student_table(table, column_indices: Dict[str, int]) -> List[Dict]:
         name = cells[column_indices['name']].text.strip() if column_indices['name'] >= 0 else ""
         raw_id = cells[id_col].text if id_col >= 0 else ""
         raw_class = cells[class_col].text if class_col >= 0 else ""
-        score_text = cells[column_indices['score']].text if column_indices['score'] >= 0 else "0"
+        score_text = cells[column_indices['score']].text if column_indices['score'] >= 0 else "1"
         
         # Smart swap: kiểm tra từng dòng
         student_id, student_class = smart_swap_id_class(raw_id, raw_class)

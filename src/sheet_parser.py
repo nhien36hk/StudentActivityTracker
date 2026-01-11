@@ -34,7 +34,7 @@ def detect_columns(df: pd.DataFrame) -> Dict[str, str]:
             columns['name'] = col
         elif 'lớp' in col_lower or 'đơn vị' in col_lower:
             columns['student_class'] = col
-        elif 'nrl' in col_lower or 'điểm' in col_lower:
+        elif 'nrl' in col_lower or 'điểm' in col_lower or 'số ngày' in col_lower:
             columns['score'] = col
     
     return columns
@@ -286,7 +286,7 @@ def parse_worksheet(worksheet: Worksheet, activity_name: str, activity_link: str
         
         raw_id = safe_get(row, cols.get('student_id', ''), '')
         raw_class = safe_get(row, cols.get('student_class', ''), '')
-        score_val = safe_get(row, cols.get('score', ''), 0)
+        score_val = safe_get(row, cols.get('score', ''), 1)
         
         # Smart swap
         student_id, student_class = smart_swap_id_class(raw_id, raw_class)
