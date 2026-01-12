@@ -53,12 +53,8 @@ def render_hero() -> None:
     """Render hero section with FREE badge and title."""
     html = """
     <div class="hero-container">
-        <div class="hero-icon">🎓</div>
         <div class="free-badge">✨ MIỄN PHÍ 100% - KHÔNG MẤT XU NÀO ✨</div>
         <h1 class="hero-title">Tra cứu Điểm Rèn Luyện</h1>
-        <p class="hero-subtitle">
-            Tra cứu không giới hạn • Hoàn toàn miễn phí • Không cần đăng ký
-        </p>
     </div>
     """
     st.markdown(html, unsafe_allow_html=True)
