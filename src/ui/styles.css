@@ -693,6 +693,85 @@ div[data-baseweb="input"]:focus-within {
     color: var(--text-secondary);
 }
 
+/* ============ DONATE SECTION ============ */
+.donate-container {
+    max-width: 850px;
+    margin: 1.5rem auto 0;
+    padding: 0 1rem;
+    text-align: center;
+}
+
+.donate-details {
+    display: inline-block;
+}
+
+.donate-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #D4A574 0%, #C4956A 100%);
+    color: white;
+    border-radius: 50px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    list-style: none;
+    box-shadow: 0 4px 15px rgba(212, 165, 116, 0.35);
+}
+
+.coffee-icon {
+    font-size: 1.5rem;
+    display: inline-block;
+    animation: coffeeWiggle 2s ease-in-out infinite;
+}
+
+@keyframes coffeeWiggle {
+    0%, 100% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+}
+
+.donate-trigger::-webkit-details-marker {
+    display: none;
+}
+
+.donate-trigger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(212, 165, 116, 0.45);
+}
+
+.donate-content {
+    margin-top: 1.25rem;
+    padding: 1.5rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    box-shadow: var(--shadow-light);
+    border: 1px solid var(--glass-border);
+    animation: fadeIn 0.3s ease;
+}
+
+.donate-text {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.donate-qr {
+    max-width: 220px;
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.donate-note {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 0.75rem;
+    opacity: 0.8;
+}
+
 /* ============ RESPONSIVE ============ */
 @media (max-width: 768px) {
     .hero-title {

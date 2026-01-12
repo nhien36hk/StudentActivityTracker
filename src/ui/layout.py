@@ -1,9 +1,12 @@
 """
-Layout components: Header, Hero section, Footer.
+Layout components: Header, Hero section, Footer, Donate.
 """
 import streamlit as st
+import base64
+from pathlib import Path
 
 GITHUB_URL = "https://github.com/nhien36hk/StudentActivityTracker"
+DONATE_IMAGE = Path(__file__).parent.parent.parent / "data" / "donate.jpg"
 
 
 def render_header() -> None:
@@ -74,6 +77,43 @@ def render_footer() -> None:
             <a href="{GITHUB_URL}" target="_blank" class="footer-link">nhien36hk</a>
             • NRL Tracker v1.0
         </p>
+    </div>
+    """
+    st.markdown(html, unsafe_allow_html=True)
+
+
+def _load_donate_image() -> str:
+    """Load và encode donate image thành base64."""
+    if not DONATE_IMAGE.exists():
+        return ""
+    
+    with open(DONATE_IMAGE, "rb") as f:
+        return base64.b64encode(f.read()).decode()
+
+
+def render_donate() -> None:
+    """Render donate section với QR code."""
+    img_base64 = _load_donate_image()
+    if not img_base64:
+        return
+    
+    html = f"""
+    <div class="donate-container">
+        <details class="donate-details">
+            <summary class="donate-trigger">
+                <span class="coffee-icon">🧋</span>
+                <span>Mời tôi ly cà phê</span>
+            </summary>
+            <div class="donate-content">
+                <p class="donate-text">
+                    Nếu công cụ này giúp ích cho bạn, hãy ủng hộ mình một ly cà phê nhé! 💕
+                </p>
+                <img src="data:image/jpeg;base64,{img_base64}" 
+                     alt="Donate QR Code" 
+                     class="donate-qr"/>
+                <p class="donate-note">Quét mã QR bằng app ngân hàng</p>
+            </div>
+        </details>
     </div>
     """
     st.markdown(html, unsafe_allow_html=True)
