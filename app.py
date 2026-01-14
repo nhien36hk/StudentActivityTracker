@@ -80,6 +80,6 @@ if query and (search_clicked or query):
 
 
 # ============ FOOTER ============
-render_donate()
+# render_donate()
 render_footer()
 
