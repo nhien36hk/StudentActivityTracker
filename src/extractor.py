@@ -25,7 +25,7 @@ def get_file_year(excel_path: Path) -> int:
 
 def find_link_column(worksheet, header_row: int = 2) -> int | None:
     """Tìm cột chứa link trong worksheet. Hỗ trợ: 'Link', 'Sheet'."""
-    keywords = ['link', 'sheet']
+    keywords = ['link', 'sheet', 'quyết định công nhận nrl']
     for col in range(1, worksheet.max_column + 1):
         cell_value = worksheet.cell(row=header_row, column=col).value
         if cell_value:
